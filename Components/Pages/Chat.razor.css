@@ -1,0 +1,282 @@
+﻿.chat {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.chan-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--panel);
+}
+
+.back {
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
+    text-decoration: none;
+    color: var(--muted);
+}
+
+    .back:hover {
+        color: var(--paper);
+    }
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2.4s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.35;
+    }
+}
+
+.chan-label {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    flex: 1;
+}
+
+.chan-status {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+}
+
+.feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.msg {
+    max-width: 80%;
+}
+
+    .msg .who {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 0.25rem;
+    }
+
+    .msg p {
+        margin: 0;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+
+    .msg.them {
+        align-self: flex-start;
+        border-left: 2px solid var(--accent);
+        padding-left: 0.9rem;
+    }
+
+        .msg.them .who {
+            color: var(--accent);
+        }
+
+    .msg.you {
+        align-self: flex-end;
+        background: var(--panel);
+        border-radius: 4px;
+        padding: 0.6rem 0.9rem;
+    }
+
+.cursor {
+    display: inline-block;
+    color: var(--accent);
+    animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+.composer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--hairline);
+    background: var(--panel);
+}
+
+.prompt {
+    font-family: var(--font-mono);
+    color: var(--accent);
+}
+
+.composer input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--paper);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    padding: 0.5rem 0;
+}
+
+    .composer input:focus {
+        outline: none;
+    }
+
+    .composer input::placeholder {
+        color: var(--muted);
+    }
+
+.composer button {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    background: var(--signal);
+    color: #15171d;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+    .composer button:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    .composer button:hover:not(:disabled) {
+        opacity: 0.85;
+    }
+
+@media (max-width: 480px) {
+    .msg {
+        max-width: 92%;
+    }
+
+    .chan-label {
+        font-size: 0.75rem;
+    }
+}
+
+
+.error-banner {
+    margin: 0 1.5rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #d9645a;
+    border-radius: 4px;
+    color: #d9645a;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+.reset-link {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+    .reset-link:hover {
+        color: var(--paper);
+    }
+
+.status-error {
+    color: #d9645a;
+}
+
+.msg-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.timestamp {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0 0.2rem;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.msg.them:hover .copy-btn {
+    opacity: 1;
+}
+
+.copy-btn:hover {
+    color: var(--accent);
+}
+
+.composer button.stop {
+    background: #d9645a;
+    color: #15171d;
+}
+
+.msg p, .msg :is(ul, ol) {
+    margin: 0 0 0.5em;
+}
+
+.msg :is(ul, ol) {
+    padding-left: 1.2em;
+}
+
+.msg code {
+    background: var(--panel);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+}
+
+.msg pre {
+    background: var(--panel);
+    padding: 0.75em;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+
+    .msg pre code {
+        background: none;
+        padding: 0;
+    }
+
+.msg strong {
+    color: var(--paper);
+}
+
+.msg a {
+    color: var(--accent);
+}

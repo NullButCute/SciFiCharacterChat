@@ -1,0 +1,170 @@
+﻿@page "/chat/{CharacterId}"
+@rendermode InteractiveServer
+@using SciFiCharacterChat.Data
+@using SciFiCharacterChat.Models
+@using SciFiCharacterChat.Services
+@inject SciFiCharacterChat.Services.CharacterChatService ChatService
+@inject IJSRuntime JS
+
+@if (_character is null)
+{
+    <p>Unknown channel.</p>
+}
+else
+{
+    <div class="chat" style="--accent:@_character.AccentColor">
+        <header class="chan-bar">
+            <a class="back" href="/" aria-label="Back to signal log">‹</a>
+            <span class="dot" aria-hidden="true"></span>
+            <span class="chan-label">CH.@(_index.ToString("00")) — @_character.Name.ToUpperInvariant()</span>
+            <span class="chan-status @(_error is not null ? "status-error" : "")">@StatusText</span>
+            <button class="reset-link" @onclick="ResetAsync">reset</button>
+        </header>
+
+        @if (_error is not null)
+        {
+            <div class="error-banner">@_error</div>
+        }
+
+        <div class="feed" @ref="_feedRef">
+            @foreach (var (message, idx) in _messages.Select((m, i) => (m, i)))
+            {
+                <div class="msg @(message.IsUser ? "you" : "them")">
+                    <div class="msg-meta">
+                        <span class="who">@(message.IsUser ? "YOU" : _character.Name.ToUpperInvariant())</span>
+                        <span class="timestamp">@message.Timestamp.LocalDateTime.ToString("t")</span>
+                        @if (!message.IsUser)
+                        {
+                            <button class="copy-btn" @onclick="() => CopyAsync(message.Text, idx)" aria-label="Copy message">
+                                @(idx == _justCopiedIndex ? "✓" : "⧉")
+                            </button>
+                        }
+                    </div>
+                    @if (message.IsUser)
+                    {
+                        <p>@message.Text</p>
+                    }
+                    else
+                    {
+                        @((MarkupString)MarkdownRenderer.ToHtml(message.Text))
+                    }
+                </div>
+            }
+            @if (_isStreaming)
+            {
+                <div class="msg them">
+                    <span class="who">@_character.Name.ToUpperInvariant()</span>
+                    <p>@_streamingText<span class="cursor">▍</span></p>
+                </div>
+            }
+        </div>
+
+        <div class="composer">
+            <span class="prompt">›</span>
+            <input @bind="_input" @bind:event="oninput" @onkeydown="HandleKeyDown"
+                   placeholder="Transmit a message..." disabled="@_isStreaming" />
+            @if (_isStreaming)
+            {
+                <button class="stop" @onclick="Stop">Stop</button>
+            }
+            else
+            {
+                <button @onclick="SendAsync" disabled="@string.IsNullOrWhiteSpace(_input)">Send</button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string CharacterId { get; set; } = "";
+    private SciFiCharacter? _character;
+    private int _index;
+    private List<DisplayMessage> _messages = [];
+    private string _input = "";
+    private bool _isStreaming;
+    private string _streamingText = "";
+    private string? _error;
+    private int? _justCopiedIndex;
+    private CancellationTokenSource? _cts;
+    private ElementReference _feedRef;
+
+    private string StatusText =>
+        _error is not null ? "SIGNAL LOST" :
+        _isStreaming ? "RECEIVING" : "CONNECTED";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_character?.Id == CharacterId) return;
+        _character = CharacterCatalog.Find(CharacterId);
+        _index = CharacterCatalog.All.ToList().FindIndex(c => c.Id == CharacterId) + 1;
+        _error = null;
+        if (_character is not null)
+        {
+            _messages = await ChatService.GetHistoryAsync(_character.Id);
+        }
+    }
+
+    private async Task HandleKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_input) && !_isStreaming)
+            await SendAsync();
+    }
+
+    private async Task SendAsync()
+    {
+        if (_character is null || string.IsNullOrWhiteSpace(_input)) return;
+        var userMessage = _input;
+        _input = "";
+        _error = null;
+        _messages.Add(new DisplayMessage(true, userMessage, DateTimeOffset.Now));
+        _isStreaming = true;
+        _streamingText = "";
+        _cts = new CancellationTokenSource();
+        StateHasChanged();
+        await JS.InvokeVoidAsync("scrollFeedToBottom", _feedRef);
+
+        try
+        {
+            await foreach (var chunk in ChatService.SendMessageStreamingAsync(_character.Id, userMessage, _cts.Token))
+            {
+                _streamingText += chunk;
+                StateHasChanged();
+            }
+        }
+        catch (ChatServiceException ex) { _error = ex.Message; }
+        catch (Exception) { _error = "Something went wrong reaching the channel. Try again."; }
+
+        if (!string.IsNullOrEmpty(_streamingText))
+        {
+            _messages.Add(new DisplayMessage(false, _streamingText, DateTimeOffset.Now));
+        }
+
+        _isStreaming = false;
+        _cts?.Dispose();
+        _cts = null;
+        StateHasChanged();
+        await JS.InvokeVoidAsync("scrollFeedToBottom", _feedRef);
+    }
+
+    private void Stop() => _cts?.Cancel();
+
+    private async Task CopyAsync(string text, int index)
+    {
+        await JS.InvokeVoidAsync("copyText", text);
+        _justCopiedIndex = index;
+        StateHasChanged();
+        await Task.Delay(1200);
+        if (_justCopiedIndex == index) { _justCopiedIndex = null; StateHasChanged(); }
+    }
+
+    private async Task ResetAsync()
+    {
+        if (_character is null) return;
+        var confirmed = await JS.InvokeAsync<bool>("confirmAction", "Clear this entire conversation? This can't be undone.");
+        if (!confirmed) return;
+        await ChatService.ClearHistoryAsync(_character.Id);
+        _messages = await ChatService.GetHistoryAsync(_character.Id);
+        _error = null;
+        StateHasChanged();
+    }
+}

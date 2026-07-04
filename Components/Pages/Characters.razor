@@ -1,0 +1,25 @@
+﻿@page "/"
+@using SciFiCharacterChat.Data
+
+<PageTitle>Signal Log</PageTitle>
+
+<header class="log-header">
+    <span class="eyebrow">SIGNAL LOG</span>
+    <h1>Open a channel</h1>
+    <p class="sub">@CharacterCatalog.All.Count channels available</p>
+</header>
+
+<div class="roster">
+    @foreach (var (character, index) in CharacterCatalog.All.Select((c, i) => (c, i)))
+    {
+        <a class="row" href="@($"/chat/{character.Id}")" style="--accent:@character.AccentColor">
+            <span class="channel-no">CH.@((index + 1).ToString("00"))</span>
+            <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span class="who">
+                <span class="name">@character.Name</span>
+                <span class="tagline">@character.Tagline</span>
+            </span>
+            <span class="go" aria-hidden="true">›</span>
+        </a>
+    }
+</div>

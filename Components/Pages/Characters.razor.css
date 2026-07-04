@@ -1,0 +1,126 @@
+﻿.log-header {
+    padding: 3rem 1.5rem 1.5rem;
+}
+
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--signal);
+}
+
+.log-header h1 {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 1.75rem;
+    margin: 0.5rem 0 0.25rem;
+}
+
+.sub {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0;
+}
+
+.roster {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--hairline);
+    margin: 0 1.5rem;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 3.5rem 2.5rem 1fr 1.25rem;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 0.5rem;
+    text-decoration: none;
+    border-bottom: 1px solid var(--hairline);
+    border-left: 2px solid transparent;
+    transition: border-left-color 0.15s ease, background 0.15s ease, padding-left 0.15s ease;
+}
+
+    .row:hover, .row:focus-visible {
+        border-left-color: var(--accent);
+        background: var(--panel);
+        padding-left: 0.75rem;
+    }
+
+.channel-no {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+}
+
+    .bars span {
+        width: 3px;
+        background: var(--accent);
+        opacity: 0.85;
+    }
+
+        .bars span:nth-child(1) {
+            height: 40%;
+        }
+
+        .bars span:nth-child(2) {
+            height: 70%;
+        }
+
+        .bars span:nth-child(3) {
+            height: 100%;
+        }
+
+.who {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.name {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--accent);
+}
+
+.tagline {
+    font-size: 0.85rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.go {
+    font-size: 1.1rem;
+    color: var(--muted);
+    justify-self: end;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.row:hover .go, .row:focus-visible .go {
+    transform: translateX(3px);
+    color: var(--accent);
+}
+
+@media (max-width: 480px) {
+    .row {
+        grid-template-columns: 2.5rem 1.75rem 1fr 1rem;
+        gap: 0.6rem;
+        padding: 0.9rem 0.4rem;
+    }
+
+    .tagline {
+        white-space: normal;
+    }
+}
